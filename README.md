@@ -21,3 +21,22 @@ Id|Function|Command|Argument 1| Argument 2| Argument 3
 17|delete hardware bp|bac|index
 18|execute till return| ret
 19| list modules | lm
+## Usage
+### 1. Launch Debugger
+Launch the debugger by specifying the path to the target executable you want to debug.
+-exec <target_path>
+### 2. Debug Commands
+Once the debugger is running, you can use various commands from the command-line interface to control and analyze the target program.
+## Screenshots
+![image](https://github.com/user-attachments/assets/971501af-2ba1-402a-b623-0caca93b15fc)
+![image](https://github.com/user-attachments/assets/3dd4f06b-c145-4d2f-9667-d64cee633d92)
+![image](https://github.com/user-attachments/assets/b39118e8-cb1e-4138-a157-fff6529eb1ba)
+
+
+
+
+
+
+
+
+
