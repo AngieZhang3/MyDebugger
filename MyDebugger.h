@@ -116,11 +116,11 @@ DWORD EventOutputString(DEBUG_EVENT* lpEvent);
 DWORD EventRip(DEBUG_EVENT* lpEvent);
 
 //Exception Handling
-DWORD ExecBreakPoint(DEBUG_EVENT* lpEvent);
-DWORD ExecStep(DEBUG_EVENT* lpEvent);
-int GetCommand(DEBUG_EVENT* lpEvent);
-DWORD ExecPriv(DEBUG_EVENT* lpEvent);
-DWORD ExecAccess(DEBUG_EVENT* lpEvent);
+DWORD ExecBreakPoint(DEBUG_EVENT* lpEvent);   //handle EXCEPTION_BREAKPOINT
+DWORD ExecStep(DEBUG_EVENT* lpEvent);  // handle EXCEPTION_SINGLE_STEP
+int GetCommand(DEBUG_EVENT* lpEvent);  // get commands from command line
+DWORD ExecPriv(DEBUG_EVENT* lpEvent);  //handle EXCEPTION_PRIV_INSTRUCTION
+DWORD ExecAccess(DEBUG_EVENT* lpEvent); //handle EXCEPTION_ACCESS_VIOLATION
 //Import Disassembly function from an open-source disassembler "dasm"
 extern "C"
 void __stdcall Decode2Asm(IN PBYTE pCodeEntry,
@@ -128,57 +128,58 @@ void __stdcall Decode2Asm(IN PBYTE pCodeEntry,
 	OUT UINT * pnCodeSize,
 	UINT nAddress);
 
-int MyDisAsm(DWORD dwProcessId, LPVOID lpAddress, UINT nLine);
-int MyShowReg(DWORD dwThreadId);
-int MyModifyReg(DWORD dwThreadId, char* szReg);
-int MyShowSpecReg(DWORD dwThreadId, char* szReg);
-int MyReadRegisters(DWORD dwThreadId, CONTEXT* pContext);
-int MyWriteRegisters(DWORD dwThreadId, CONTEXT* pContext);
-int MyReadProcessMemory(DWORD dwProcessId, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize);
-int MyWriteProcessMemory(DWORD dwProcessId, LPVOID lpBase, LPVOID lpBuffer, SIZE_T nSize);
-int MySetStep(DWORD dwThreadId);
-int MySetBreakPoint(DWORD dwProcessId, UINT nType, LPVOID lpAddress);
-int MySetBreakHard(DWORD dwThreadId, LPVOID lpAddress, UINT nType, UINT nLen);
-int MyResetBreakHard(DWORD dwThreadId, HardBp hbpLst[4]);
-int MyRemoveBreakHard(DWORD dwThreadId, int nIndex);
-int MySetBreakMem(DWORD dwProcessId, LPVOID lpAddress, char chType, UINT nSize);
-int MyVirtualProtectEx(DWORD dwPid,
+int MyDisAsm(DWORD dwProcessId, LPVOID lpAddress, UINT nLine);  // disassembly
+int MyShowReg(DWORD dwThreadId);     //show registers
+int MyModifyReg(DWORD dwThreadId, char* szReg);  //modify registers
+int MyShowSpecReg(DWORD dwThreadId, char* szReg);  //show a specified register
+int MyReadRegisters(DWORD dwThreadId, CONTEXT* pContext);  // read registers
+int MyWriteRegisters(DWORD dwThreadId, CONTEXT* pContext);  // write registers
+int MyReadProcessMemory(DWORD dwProcessId, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize);  // read process memory
+int MyWriteProcessMemory(DWORD dwProcessId, LPVOID lpBase, LPVOID lpBuffer, SIZE_T nSize);  //write process memory
+int MySetStep(DWORD dwThreadId);  // set single step 
+int MySetBreakPoint(DWORD dwProcessId, UINT nType, LPVOID lpAddress); // set software bp
+int MySetBreakHard(DWORD dwThreadId, LPVOID lpAddress, UINT nType, UINT nLen);  //set hardware bp
+int MyResetBreakHard(DWORD dwThreadId, HardBp hbpLst[4]);  // reset hardware bp
+int MyRemoveBreakHard(DWORD dwThreadId, int nIndex);   //delete hardware bp
+int MySetBreakMem(DWORD dwProcessId, LPVOID lpAddress, char chType, UINT nSize);  // set memory bp
+int MyRemoveBreakMem(int nIndex);   // delete memory bp
+int MyVirtualProtectEx(DWORD dwPid,    
 	LPVOID lpAddress,
 	SIZE_T dwSize,
 	DWORD flNewProtect,
 	PDWORD lpflOldProtect
-);
+);  // change memory protection options
 
-// assistant function for Memory BP
-int MyRemoveBreakMem(int nIndex);
-std::list<LPVOID> MyRemoveBpPageMapping(int nId);
-DWORD MyRemovePages(LPVOID lpAddress);
+// assistant function for Memory Bp
+std::list<LPVOID> MyRemoveBpPageMapping(int nId);  // remove an element from BP-Page mappling
+DWORD MyRemovePages(LPVOID lpAddress);  // remove an element from page list
 bool IsMemBpExists(LPVOID lpAddress, char charType, UINT nLen); // if breakpoint exists in g_memBps list
 bool IsPageCommitted(DWORD dwProcessId, LPVOID lpAddress, UINT nLen); //if involved page is committed
 bool IsPageExists(LPVOID lpAddress); // if a given page exists in g_pages list
-int AddToPageList(LPVOID lpAddress, DWORD dwOldProtect);
-int AddToBpPageMapping(DWORD nId, LPVOID lpBaseAddress);
+int AddToPageList(LPVOID lpAddress, DWORD dwOldProtect);  // add an element to page list
+int AddToBpPageMapping(DWORD nId, LPVOID lpBaseAddress); // add an element to bp-page mapping
 std::list<UINT> IsPageInBpPageMapping(DWORD lpAddress); // check if the exception is in the same page as any of the bp.
-bool IsPageUsedByOtherBps(LPVOID lpAddress);
+bool IsPageUsedByOtherBps(LPVOID lpAddress);  // check if pages are used by other break point
 //Command 
-DWORD GetOldProtect(DWORD lpAddress);
+DWORD GetOldProtect(DWORD lpAddress);  // get the old memory protection constant for a page
 
 
-int CmdDisAsm(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdRun(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdExecTillRet(DEBUG_EVENT* lpEvent, const char* lpCmd); // execute till return
-int CmdRegister(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdStep(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdNext(DEBUG_EVENT* lpEvent, const char* lpCmd); 
-int CmdBreakPoint(DEBUG_EVENT* lpEvent, const char* lpCmd); // software breakpoint
-int CmdBreakPointList(DEBUG_EVENT* lpEvent, const char* lpCmd); // show  a list of software breakpoint
-int CmdBreakPointClear(DEBUG_EVENT* lpEvent, const char* lpCmd); // show  a list of software breakpoint
-int CmdBreakMem(DEBUG_EVENT* lpEvent, const char* lpCmd); 
-int CmdBreakMemList(DEBUG_EVENT* lpEvent, const char* lpCmd); 
-int CmdBreakMemClear(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdBreakHard(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdBreakHardList(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdBreakHardClear(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdDisplayMemory(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdModifyMemory(DEBUG_EVENT* lpEvent, const char* lpCmd);
-int CmdListModules(DEBUG_EVENT* lpEvent, const char* lpCmd);
+//Commands
+int CmdDisAsm(DEBUG_EVENT* lpEvent, const char* lpCmd);  // u: show disassembly
+int CmdRun(DEBUG_EVENT* lpEvent, const char* lpCmd);  // g: run 
+int CmdExecTillRet(DEBUG_EVENT* lpEvent, const char* lpCmd); // ret: execute till return
+int CmdRegister(DEBUG_EVENT* lpEvent, const char* lpCmd); //r : show/ modify registers
+int CmdStep(DEBUG_EVENT* lpEvent, const char* lpCmd); // t: step in
+int CmdNext(DEBUG_EVENT* lpEvent, const char* lpCmd); // p: step over
+int CmdBreakPoint(DEBUG_EVENT* lpEvent, const char* lpCmd); // bp: set software breakpoint
+int CmdBreakPointList(DEBUG_EVENT* lpEvent, const char* lpCmd); // bl: show  a list of software breakpoint
+int CmdBreakPointClear(DEBUG_EVENT* lpEvent, const char* lpCmd); // bc: delete  a list of software breakpoint
+int CmdBreakMem(DEBUG_EVENT* lpEvent, const char* lpCmd);   // bm: set a memory bp
+int CmdBreakMemList(DEBUG_EVENT* lpEvent, const char* lpCmd); // bml: show a list of memory bp
+int CmdBreakMemClear(DEBUG_EVENT* lpEvent, const char* lpCmd);  // bmc: delete memory bp
+int CmdBreakHard(DEBUG_EVENT* lpEvent, const char* lpCmd);  //ba: set a hardware bp
+int CmdBreakHardList(DEBUG_EVENT* lpEvent, const char* lpCmd); // bal: show a list of hardware bp
+int CmdBreakHardClear(DEBUG_EVENT* lpEvent, const char* lpCmd); //bac: delete a hardware bp
+int CmdDisplayMemory(DEBUG_EVENT* lpEvent, const char* lpCmd); // dd: display memory
+int CmdModifyMemory(DEBUG_EVENT* lpEvent, const char* lpCmd); // ed: modify memory
+int CmdListModules(DEBUG_EVENT* lpEvent, const char* lpCmd); // lm: list modules
