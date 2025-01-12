@@ -13,7 +13,7 @@ Id|Function|Command|Argument 1| Argument 2| Argument 3
 9|set software bp|bp|address|length
 10|list software bp|bl
 11|delete software bp|bc|index
-12|set memory bp| bm|address|type(a/w)|length
+12|set memory bp| bm|type <br> a = access, w = write|length|address
 13|list memory bp|bml
 14|delete memory bp|bmc|index
 15|set hardware bp|ba|address|type <br> 0 = execute, 3 = access|length<br> 0 = 1 byte, 1 = 2 bytes, 3 = 4 bytes
